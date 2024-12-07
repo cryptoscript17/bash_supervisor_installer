@@ -1,0 +1,6 @@
+docker system prune --force
+
+docker-compose up --build -d && \
+docker run -it --expose 9002 -p 9002:9002 docker_supervisord_backend /bin/bash -i -l
+
+

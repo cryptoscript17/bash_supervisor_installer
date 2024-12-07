@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import time
+import os
+
+
+workdir = os.path.dirname(os.path.realpath(__file__))
+
+
+DEV_CONFIG = {
+    'user':"postgres",
+    'password':"",
+    'host':"127.0.0.1",
+    'port':"65432",
+    'database':"iot"
+}
+
+CREATED_OBJECTS = []
+vendor = 'rnox'
+table_schema = 'raw_data'
+zero_table_name = '%s_raw'
+zero_trigger_function_prefix = 'before_insert_%s_py'
+
+create_database_schema_query = f'''
+CREATE SCHEMA IF NOT EXISTS {table_schema};
+GRANT USAGE ON SCHEMA {table_schema} TO PUBLIC;
+GRANT ALL ON SCHEMA {table_schema} TO pg_database_owner;
+
+CREATE EXTENSION IF NOT EXISTS plpython3u;
+'''
+
+create_vendor_table_query = """
+CREATE TABLE IF NOT EXISTS %s.%s_raw (
+	sid NUMERIC PRIMARY,
+	created TIMESTAMPTZ DEFAULT current_timestamp,
+	sample_raw JSONB,
+	sample_pretty TEXT,
+	is_parsed BOOLEAN DEFAULT FALSE
+);
+"""
+
+create_vendor_table_trigger_func_query = """
+CREATE OR REPLACE FUNCTION %sfunc()
+RETURNS TRIGGER 
+AS $$
+	import json
+	response_data = 'NEW.response_data'
+	if isinstance(response_data, str):
+		resp = json.loads(response_data)
+	device_snum = resp['DeviceId'] if 'DeviceId' in resp else 'NA'
+	devices_dict = resp['Devices'] if 'Devices' in resp else {'NA':'ERROR'}
+	sensors_dict = resp['Sensors'] if 'Sensors' in resp else {'NA':'ERROR'}
+	sensor_names = ''.join(x for x in list(sensors_dict.keys()))
+	return TD["event"]
+
+$$ LANGUAGE plpython3u;
+
+CREATE TRIGGER %strigger
+BEFORE INSERT ON %s.%s
+FOR EACH ROW
+EXECUTE FUNCTION %sfunc();rnox_raw
+"""
+
+
+
+def make_create_vendor_table_query(table_schema, vendor, create_vendor_table_query, create_vendor_table_trigger_func_query):
+	global CREATED_OBJECTS
+	table_name = zero_table_name % vendor
+	trigger_function_name = zero_trigger_function_prefix % vendor
+	table_query = create_vendor_table_query % (table_schema, vendor)
+	trigger_func_query = create_vendor_table_trigger_func_query % (trigger_function_name, trigger_function_name, table_schema, table_name, trigger_function_name)
+	create_vendor_query = f"\n{table_query}\n{trigger_func_query}\n"
+	return create_vendor_query
+
+vendors = ('rnox', 'urus')
+for i, vendor in enumerate(vendors):
+	if i < 1:
+		query = f'\n{create_database_schema_query}\n'
+	create_vendor_query = make_create_vendor_table_query(table_schema, vendor, create_vendor_table_query, create_vendor_table_trigger_func_query)
+	query += f'\n{create_vendor_query}\n'
+
+print(query)
+
+fpath = os.path.join(workdir, 'pg_python_database_init.txt')
+with open(fpath, 'w') as fp:
+	fsize = fp.write(query)
+if fsize:
+	print(f"Written {fsize} bytes")

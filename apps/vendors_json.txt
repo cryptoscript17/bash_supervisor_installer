@@ -1,0 +1,72 @@
+[
+	{
+		"vendor": "proxy",
+		"vendor_code": "proxy",
+		"alias": "app_00",
+		"main_py": "",
+		"devices_list": "",
+		"headers": "",
+		"body": "",
+		"url": ""
+	},
+	{
+		"vendor": "СЭМОС",
+		"vendor_code": "semos",
+		"alias": "app_01",
+		"main_py": "./semos_parser/semos_api_parser.py",
+		"devices_list": [316,317,318,319,320,337,338,339,340,388,446,447,448],
+		"headers": "",
+		"body": "",
+		"url": "http://10.14.16.41:8011?device_id={device_id}&bdate={bdate}&edate={edate}"
+	},
+	{
+		"vendor": "Polygon_Yadrovo",
+		"vendor_code": "yadrovo",
+		"alias": "app_02",
+		"main_py": "./moecom_polygon_yadrovo/moecom_polygon_yadrovo.py",
+		"devices_list": {"first": "AN6901", "second": "AN6902", "third": "AN6903", "fourth": "AN6904"},
+		"headers": {"Content-Type": "application/json"},
+		"body": {"request":"avg20m_ecolab_posts_data"},
+		"url": "https://moecom.polygon-yadrovo.ru"
+	},
+	{
+		"vendor": "Polygon_Odintsovo",
+		"vendor_code": "odintsovo",
+		"alias": "app_03",
+		"main_py": "./moecom_polygon_odintsovo/moecom_polygon_odintsovo.py",
+		"devices_list": {"first": "AN99186", "second": "AN99185", "third": "AN99184", "fourth": "AN99187"},
+		"headers": {"Content-Type": "application/json"},
+		"body": {"request":"avg20m_ecolab_posts_data"},
+		"url": "https://moecom.polygon-odintsovo.ru"
+	},
+	{
+		"vendor": "pdk_bot",
+		"vendor_code": "proxy",
+		"alias": "app_04",
+		"main_py": "./aiogram_gis_bot/moem_pdk.py",
+		"devices_list": "",
+		"headers": {"Content-Type":"application/json", "Authorization": "Bearer TOKEN", "Origin": "https://dev.ecomon.mosreg.ru"},
+		"body": "",
+		"url": "https://dev.ecomon.mosreg.ru/api/json-rpc/BASE.DSAIR_SENSORVALUE"
+	},
+	{
+		"vendor": "Ecomon_Service_Bot",
+		"vendor_code": "moem_bot",
+		"alias": "app_05",
+		"main_py": "./aiogram_gis_bot/aiogram_gis_bot.py",
+		"devices_list": "",
+		"headers": {"Accept": "application/json, text/plain, */*"},
+		"body": "",
+		"url": "https://rgis.mosreg.ru/v3/ecomonitoring/getMainInfo?post_id={device_id}"
+	},
+	{
+		"vendor": "МосЭМ",
+		"vendor_code": "mskem",
+		"alias": "app_06",
+		"main_py": "./moecom_mskem_ftp/parse_moem_csv_pandas.py",
+		"devices_list": [400, 401, 402, 403, 405, 406, 407, 408, 409, 410, 411, 412, 414, 46, 47, 932, 930],
+		"headers": "",
+		"body": "",
+		"url": "ftp://ftp-user:iPqnFSFB@95.167.243.113:21025"
+	}
+]
